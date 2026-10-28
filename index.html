@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Нью-Йорк и Кишинёв</title>
+  <title>Время в Нью-Йорке</title>
   <style>
-    :root { --bg: #0f1724; --fg: #f4f1ea; --muted: #9aa6b8; --accent: #f2b544; --line: #2a3a55; }
+    :root { --bg: #0f1724; --fg: #f4f1ea; --muted: #9aa6b8; --accent: #f2b544; }
     * { box-sizing: border-box; }
     body {
       margin: 0; min-height: 100vh; display: grid; place-items: center;
@@ -14,75 +14,30 @@
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       padding: 16px; text-align: center;
     }
-    main { display: grid; grid-template-columns: 1fr 1fr; gap: 0; width: min(1100px, 100%); }
-    .clock { padding: 24px 16px; }
-    .clock + .clock { border-left: 1px solid var(--line); }
     .label { text-transform: uppercase; letter-spacing: .2em; font-size: .85rem; color: var(--accent); }
-    .time {
-      font-size: clamp(2.5rem, 9vw, 6.5rem); font-weight: 700;
+    #time {
+      font-size: clamp(3rem, 16vw, 9rem); font-weight: 700;
       font-variant-numeric: tabular-nums; line-height: 1.1; margin: 12px 0;
     }
-    .date { font-size: clamp(.95rem, 2.5vw, 1.2rem); color: var(--muted); }
-    .diff { grid-column: 1 / -1; margin-top: 24px; color: var(--muted); }
-    .diff b { color: var(--fg); }
-    @media (max-width: 640px) {
-      main { grid-template-columns: 1fr; }
-      .clock + .clock { border-left: 0; border-top: 1px solid var(--line); }
-    }
+    #date { font-size: clamp(1rem, 4vw, 1.4rem); color: var(--muted); }
+    footer { position: fixed; bottom: 16px; left: 0; right: 0; font-size: .8rem; color: var(--muted); }
   </style>
 </head>
 <body>
   <main>
-    <section class="clock" data-tz="America/New_York">
-      <div class="label">Нью-Йорк, США</div>
-      <div class="time">--:--:--</div>
-      <div class="date"></div>
-    </section>
-    <section class="clock" data-tz="Europe/Chisinau">
-      <div class="label">Кишинёв, Молдова</div>
-      <div class="time">--:--:--</div>
-      <div class="date"></div>
-    </section>
-    <div class="diff" id="diff"></div>
+    <div class="label">Нью-Йорк, США</div>
+    <div id="time">--:--:--</div>
+    <div id="date"></div>
   </main>
+  <footer>Часовой пояс America/New_York</footer>
   <script>
-    const clocks = [...document.querySelectorAll('.clock')].map(el => {
-      const tz = el.dataset.tz;
-      return {
-        tz,
-        time: el.querySelector('.time'),
-        date: el.querySelector('.date'),
-        timeFmt: new Intl.DateTimeFormat('ru-RU', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        dateFmt: new Intl.DateTimeFormat('ru-RU', { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long' })
-      };
-    });
-
-    // Смещение часового пояса от UTC в минутах на данный момент
-    function offsetMinutes(tz, now) {
-      const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
-      }).formatToParts(now).reduce((a, p) => (a[p.type] = p.value, a), {});
-      const asUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
-      return Math.round((asUTC - now.getTime()) / 60000);
-    }
-
-    function hoursWord(n) {
-      const m10 = n % 10, m100 = n % 100;
-      if (m10 === 1 && m100 !== 11) return 'час';
-      if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'часа';
-      return 'часов';
-    }
-
+    const tz = 'America/New_York';
+    const timeFmt = new Intl.DateTimeFormat('ru-RU', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateFmt = new Intl.DateTimeFormat('ru-RU', { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     function tick() {
       const now = new Date();
-      for (const c of clocks) {
-        c.time.textContent = c.timeFmt.format(now);
-        c.date.textContent = c.dateFmt.format(now);
-      }
-      const h = (offsetMinutes('Europe/Chisinau', now) - offsetMinutes('America/New_York', now)) / 60;
-      document.getElementById('diff').innerHTML =
-        `В Кишинёве на <b>${h} ${hoursWord(h)}</b> больше, чем в Нью-Йорке`;
+      document.getElementById('time').textContent = timeFmt.format(now);
+      document.getElementById('date').textContent = dateFmt.format(now);
     }
     tick();
     setInterval(tick, 1000);
