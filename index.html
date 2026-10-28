@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Время в Нью-Йорке</title>
+  <style>
+    :root { --bg: #0f1724; --fg: #f4f1ea; --muted: #9aa6b8; --accent: #f2b544; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: radial-gradient(circle at 50% 30%, #1c2a42, var(--bg) 70%);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      padding: 16px; text-align: center;
+    }
+    .label { text-transform: uppercase; letter-spacing: .2em; font-size: .85rem; color: var(--accent); }
+    #time {
+      font-size: clamp(3rem, 16vw, 9rem); font-weight: 700;
+      font-variant-numeric: tabular-nums; line-height: 1.1; margin: 12px 0;
+    }
+    #date { font-size: clamp(1rem, 4vw, 1.4rem); color: var(--muted); }
+    footer { position: fixed; bottom: 16px; left: 0; right: 0; font-size: .8rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="label">Нью-Йорк, США</div>
+    <div id="time">--:--:--</div>
+    <div id="date"></div>
+  </main>
+  <footer>Часовой пояс America/New_York</footer>
+  <script>
+    const tz = 'America/New_York';
+    const timeFmt = new Intl.DateTimeFormat('ru-RU', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateFmt = new Intl.DateTimeFormat('ru-RU', { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    function tick() {
+      const now = new Date();
+      document.getElementById('time').textContent = timeFmt.format(now);
+      document.getElementById('date').textContent = dateFmt.format(now);
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
