@@ -20,6 +20,9 @@
       font-variant-numeric: tabular-nums; line-height: 1.1; margin: 12px 0;
     }
     #date { font-size: clamp(1rem, 4vw, 1.4rem); color: var(--muted); }
+    .countdown { margin-top: 40px; padding: 16px 24px; border: 1px solid #2a3a55; border-radius: 12px; display: inline-block; }
+    .countdown .label { font-size: .75rem; }
+    #ny { font-size: clamp(1.2rem, 5vw, 2rem); font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 6px; }
     footer { position: fixed; bottom: 16px; left: 0; right: 0; font-size: .8rem; color: var(--muted); }
   </style>
 </head>
@@ -28,6 +31,10 @@
     <div class="label">Нью-Йорк, США</div>
     <div id="time">--:--:--</div>
     <div id="date"></div>
+    <div class="countdown">
+      <div class="label">До Нового года в Нью-Йорке</div>
+      <div id="ny">…</div>
+    </div>
   </main>
   <footer>Часовой пояс America/New_York</footer>
   <script>
@@ -38,6 +45,17 @@
       const now = new Date();
       document.getElementById('time').textContent = timeFmt.format(now);
       document.getElementById('date').textContent = dateFmt.format(now);
+
+      // Обратный отсчёт до полуночи 1 января по времени Нью-Йорка
+      const p = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23',
+        year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'
+      }).formatToParts(now).reduce((a, x) => (a[x.type] = +x.value, a), {});
+      const nyNow = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+      let s = Math.max(0, Math.floor((Date.UTC(p.year + 1, 0, 1) - nyNow) / 1000));
+      const d = Math.floor(s / 86400); s %= 86400;
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('ny').textContent =
+        `${d} дн. ${pad(Math.floor(s / 3600))}:${pad(Math.floor(s % 3600 / 60))}:${pad(s % 60)}`;
     }
     tick();
     setInterval(tick, 1000);
